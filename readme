@@ -1,0 +1,152 @@
+# 🎓 VIBE Profesional - Clasificador de Carreras
+
+Sistema de machine learning que predice la carrera profesional más adecuada basándose en un test de personalidad tipo VIBE de 20 preguntas.
+
+## 📋 Descripción
+
+Este proyecto utiliza un enfoque hybrid data generation para crear un dataset robusto:
+- **Datos Reales Simulados**: 50 perfiles por carrera (8 carreras = ~400 registros)
+- **Datos Sintéticos (SDV)**: 2000 registros generados con GaussianCopulaSynthesizer
+- **Dataset Final**: ~2400 registros para entrenamiento
+
+### Carreras Soportadas
+- 🖥️ Ingeniería de Software (Perfil A)
+- ⚙️ Ingeniería Mecatrónica (Perfil B)
+- 🔌 Ingeniería Mecánica Eléctrica (Perfil B)
+- 🏗️ Ingeniería Civil (Perfil C)
+- 📊 Administración (Perfil D)
+- 💼 Contaduría (Perfil D)
+- 📈 Gestión y Dirección de Negocios (Perfil D)
+- ⚡ Ingeniería Industrial (Perfil E)
+
+## 📁 Estructura del Proyecto
+
+```
+tesis/
+├── readme                              # Este archivo
+├── preguntas.txt                       # Las 20 preguntas del test
+├── generador.py                        # Genera datos iniciales
+├── sintetico.py                        # Crea datos sintéticos con SDV
+├── entrenamiento.ipynb                 # Entrena y compara modelos
+├── sintetizador.ipynb                    # Versión ejecutada en Google Colab
+│
+├── Datasets:
+│   ├── dataset_vibe_profesional.csv    # ~400 datos reales simulados
+│   ├── dataset_vibe_SDV_robusto.csv    # 2000 datos sintéticos
+│   ├── DATASET_MAESTRO_ENTRENAMIENTO.csv  # Dataset final combinado
+│   └── DATASET_CORREGIDO_V2.csv        # Versión corregida
+│
+└── venv/                               # Entorno virtual de Python
+```
+
+## 🚀 Instalación
+
+### Requisitos
+- Python 3.12+
+- pip
+
+### Pasos
+
+1. **Clonar o descargar el proyecto**
+```bash
+cd /home/armando/tesis
+```
+
+2. **Crear entorno virtual** (si no existe)
+```bash
+python3 -m venv tesis
+source tesis/bin/activate
+```
+
+3. **Instalar dependencias**
+```bash
+pip install -r requirements.txt
+```
+
+O instalar manualmente:
+```bash
+pip install -r requirements.txt
+```
+
+## 📝 Test del VIBE Profesional
+
+El test consta de **20 preguntas** que evalúan:
+
+1. **Preguntas 1-4**: Intereses naturales y problemas preferidos
+2. **Preguntas 5-8**: Habilidades y afinidad tecnológica
+3. **Preguntas 9-12**: Valores y satisfacción laboral
+4. **Preguntas 13-16**: Creatividad y orientación
+5. **Preguntas 17-20**: Pensamiento y validación
+
+Cada respuesta se mapea a uno de 5 perfiles (a, b, c, d, e) que correlacionan con las 8 carreras.
+
+## 🔧 Características Técnicas
+
+### Generación de Datos
+- **GaussianCopulaSynthesizer (SDV)**: Aprende correlaciones entre respuestas
+- Ruido controlado (30% probabilidad de respuestas alternativas)
+- Preserva distribuciones categóricas
+
+### Preprocesamiento
+- LabelEncoder para convertir letras (a-e) a números (0-4)
+- StandardScaler para normalizar (opcional para este caso)
+- Split 80/20 para train/test
+
+### Evaluación
+- Accuracy score como métrica principal
+- 20% del dataset reservado para testing
+- Posibilidad de agregar cross-validation
+
+## 📈 Salida Esperada
+
+Tras entrenar, se genera:
+- **Tabla de comparación**: Precisión de cada modelo
+- **Gráfico de barras**: Visualización de resultados (`resultados_torneo_modelos.png`)
+- **Matriz de confusión**: Disponible para análisis detallado
+
+## 🛠️ Personalización
+
+### Cambiar número de muestras
+En `generador.py`, línea 3:
+```python
+NUM_MUESTRAS_POR_CARRERA = 50  # Aumenta o disminuye
+```
+
+### Cambiar cantidad de datos sintéticos
+En `sintetico.py`, línea 27:
+```python
+CANTIDAD_A_GENERAR = 2000  # Ajusta según necesidad
+```
+
+### Agregar nuevas carreras
+En `generador.py`, actualiza el diccionario:
+```python
+carreras_map = {
+    "Ingeniería de Software": 'a',
+    "Nueva Carrera": 'a',  # Agregar aquí
+    ...
+}
+```
+
+## 📚 Dependencias Principales
+
+- **pandas**: Manipulación de datos
+- **scikit-learn**: Modelos de ML y preprocesamiento
+- **matplotlib & seaborn**: Visualización
+- **sdv**: Síntesis de datos sintéticos
+- **jupyter**: Notebooks interactivos
+
+
+
+## 📧 Notas
+
+- Los datos iniciales son **simulados** (no datos reales de estudiantes)
+- SDV genera datos **estadísticamente similares** pero no idénticos
+- Para uso en producción, se recomienda validar con datos reales
+- El test está diseñado para estudiantes de educación superior
+
+## 📄 Licencia
+
+Este proyecto es de uso educativo/investigativo.
+
+---
