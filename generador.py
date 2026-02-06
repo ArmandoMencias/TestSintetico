@@ -2,76 +2,56 @@ import pandas as pd
 import random
 
 # --- CONFIGURACIÓN ---
-NUM_MUESTRAS_POR_CARRERA = 50  # Generaremos 200 perfiles por cada carrera (Total ~1600 filas)
-
-# Lista de carreras a incluir en el modelo
-carreras_map = {
-    "Ingeniería de Software": 'a',
-    "Ingeniería Mecatrónica": 'b',
-    "Ingeniería Mecánica Eléctrica": 'b',
-    "Ingeniería Civil": 'c',
-    "Administración": 'd',
-    "Contaduría": 'd',
-    "Gestión y Dirección de Negocios": 'd',
-    "Ingeniería Industrial": 'e'
-}
-
-# Las opciones disponibles en el test (a, b, c, d, e)
+NUM_MUESTRAS = 200 
 opciones = ['a', 'b', 'c', 'd', 'e']
 
-def obtener_pesos(letra_dominante):
+# AQUI ESTÁ LA CLAVE 1: Perfiles diferenciados (Primaria + Secundaria)
+config_carreras = {
+    "Ingeniería de Software":        {'prim': 'a', 'sec': 'd'}, 
+    "Ingeniería Mecatrónica":        {'prim': 'b', 'sec': 'a'}, 
+    "Ingeniería Mecánica Eléctrica": {'prim': 'b', 'sec': 'c'}, 
+    "Ingeniería Civil":              {'prim': 'c', 'sec': 'e'}, 
+    "Administración":                {'prim': 'd', 'sec': 'a'}, 
+    "Contaduría":                    {'prim': 'd', 'sec': 'e'}, # Diferente de Admin
+    "Gestión y Dirección":           {'prim': 'd', 'sec': 'd'}, # Diferente de Conta
+    "Ingeniería Industrial":         {'prim': 'e', 'sec': 'd'}  
+}
+
+def obtener_pesos_con_matiz(config):
     """
-    Define la probabilidad de elegir cada inciso según el perfil.
-    Le damos un 70% de probabilidad a su letra dominante y repartimos
-    el 30% restante entre las otras para dar realismo (ruido).
+    AQUI ESTÁ LA CLAVE 2 (Reducción de Ruido):
+    - 85% Probabilidad de acertar a su principal (Señal fuerte)
+    - 10% Probabilidad de su secundaria (Matiz)
+    - 5%  Ruido total (Error humano)
     """
     pesos = []
-    for opcion in opciones:
-        if opcion == letra_dominante:
-            pesos.append(0.70)  # 70% de probabilidad de elegir su área
+    for letra in opciones:
+        if letra == config['prim']:
+            pesos.append(0.85) # <--- SEÑAL MUY ALTA (Antes era 0.60)
+        elif letra == config['sec']:
+            pesos.append(0.10) # <--- MATIZ CLARO (Antes era 0.25)
         else:
-            pesos.append(0.075) # 7.5% de probabilidad para las otras (ruido)
+            # El 5% restante se reparte entre las 3 opciones sobrantes
+            pesos.append(0.05 / 3) 
     return pesos
 
-def generar_encuesta_simulada(carrera, letra_dominante):
-    """Genera una fila de respuestas para un alumno hipotético"""
-    pesos = obtener_pesos(letra_dominante)
+datos = []
+
+print("Generando datos con BAJO RUIDO y MATICES...")
+
+for carrera, config in config_carreras.items():
+    pesos = obtener_pesos_con_matiz(config)
     
-    fila = {}
-    
-    # Generamos respuestas para las 20 preguntas
-    for i in range(1, 21):
-        pregunta_id = f"P{i:02d}" # Ej: P01, P02...
-        respuesta = random.choices(opciones, weights=pesos, k=1)[0]
-        fila[pregunta_id] = respuesta
-    
-    # Agregamos la etiqueta de la carrera (Target)
-    fila['Carrera_Target'] = carrera
-    
-    # Agregamos nivel de satisfacción (simulando que son egresados felices)
-    # 80% de probabilidad de ser 4 o 5 (Satisfecho/Muy Satisfecho)
-    fila['Satisfaccion'] = random.choices([3, 4, 5], weights=[0.1, 0.4, 0.5], k=1)[0]
-    
-    return fila
+    for _ in range(NUM_MUESTRAS):
+        fila = {}
+        for i in range(1, 21):
+            fila[f"P{i:02d}"] = random.choices(opciones, weights=pesos, k=1)[0]
+        
+        fila['Carrera_Target'] = carrera
+        fila['Satisfaccion'] = random.choices([4, 5], weights=[0.3, 0.7])[0]
+        datos.append(fila)
 
-# --- EJECUCIÓN ---
-datos_completos = []
+df_nuevo = pd.DataFrame(datos)
+df_nuevo.to_csv('datos/DATASET_CORREGIDO_BAJO_RUIDO.csv', index=False)
 
-print("Generando datos sintéticos...")
-
-for carrera, letra_dominante in carreras_map.items():
-    print(f"Creando {NUM_MUESTRAS_POR_CARRERA} perfiles para: {carrera} (Perfil '{letra_dominante}')")
-    for _ in range(NUM_MUESTRAS_POR_CARRERA):
-        datos_completos.append(generar_encuesta_simulada(carrera, letra_dominante))
-
-# Convertir a DataFrame
-df = pd.DataFrame(datos_completos)
-
-# Guardar a CSV
-nombre_archivo = 'dataset_vibe_profesional.csv'
-df.to_csv(nombre_archivo, index=False)
-
-print(f"\n¡Listo! Archivo '{nombre_archivo}' generado con éxito.")
-print(f"Total de registros: {len(df)}")
-print("\nVista previa de los datos:")
-print(df.head())
+print(f"¡Listo! Archivo generado. Este dataset es muy 'limpio' y fácil de aprender.")
