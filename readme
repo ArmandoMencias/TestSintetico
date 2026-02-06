@@ -22,7 +22,7 @@ Este proyecto utiliza un enfoque hybrid data generation para crear un dataset ro
 ## 📁 Estructura del Proyecto
 
 ```
-tesis/
+proyecto/
 ├── readme                              # Este archivo
 ├── preguntas.txt                       # Las 20 preguntas del test
 ├── generador.py                        # Genera datos iniciales
@@ -49,13 +49,12 @@ tesis/
 
 1. **Clonar o descargar el proyecto**
 ```bash
-cd /home/armando/tesis
+
 ```
 
 2. **Crear entorno virtual** (si no existe)
 ```bash
-python3 -m venv tesis
-source tesis/bin/activate
+
 ```
 
 3. **Instalar dependencias**
